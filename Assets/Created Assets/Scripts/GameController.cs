@@ -29,29 +29,13 @@ public class GameController : MonoBehaviour {
 	public CanvasGroup target_selector;
 	public bool display_target_selector = false;
 	public bool select_target = true;
+	public Text player_c_panel;
+
+
 
 	public int curr_kill_target = -1;
 	public bool out_of_game = false;
 
-	public void displayMap(){
-		if(connected){
-			display_map = true;
-		}
-	}
-
-	public void displayTargetSelector(){
-		display_target_selector = true;
-	}
-
-	public void hideTargetSelector(){
-		display_target_selector = false;
-	}
-
-	public void hideMap(){
-		if(connected){
-			display_map = false;
-		}
-	}
 
 	void Awake() {
 		MasterServer.RequestHostList("gamea");
@@ -64,7 +48,6 @@ public class GameController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(!connected){
-
 			host_data = MasterServer.PollHostList();
 
 			lobby_list.text = "";
@@ -91,6 +74,7 @@ public class GameController : MonoBehaviour {
 			host_selection.blocksRaycasts = false;
 
 			if(server_vars.game_started){
+				// control the games UI
 				if(display_map){
 					player_map.alpha = 1;
 					player_map.blocksRaycasts = true;
@@ -99,7 +83,6 @@ public class GameController : MonoBehaviour {
 					player_map.alpha = 0;
 					player_map.blocksRaycasts = false;
 				}
-
 				if(select_target || display_target_selector){
 					target_selector.alpha = 1;
 					target_selector.blocksRaycasts = true;
@@ -108,15 +91,17 @@ public class GameController : MonoBehaviour {
 					target_selector.alpha = 0;
 					target_selector.blocksRaycasts = false;
 				}
-
 				if(server_vars.killer == playerID){
 					inn_panel.text = "Killer";
 				}
 				else{
 					inn_panel.text = "Innocent";
 				}
+
+				updateLivingCounter();
 			}
 		}
+
 
 		if (Network.isServer) {
 			if(connected == false){
@@ -145,6 +130,55 @@ public class GameController : MonoBehaviour {
 
 	}
 
+	public void displayMap(){
+		if(connected){
+			display_map = true;
+		}
+	}
+	
+	public void displayTargetSelector(){
+		display_target_selector = true;
+	}
+	
+	public void hideTargetSelector(){
+		display_target_selector = false;
+	}
+	
+	public void hideMap(){
+		if(connected){
+			display_map = false;
+		}
+	}
+
+	public void updateLivingCounter(){
+		int player_count = 0;
+		CharacterController[] players = FindObjectsOfType<CharacterController> ();
+		for(int i = 0; i < players.Length; i++){
+			if(players[i].living){
+				player_count ++;
+			}
+		}
+		player_c_panel.text = "Alive: " + player_count + "/" + players.Length;
+	}
+	
+	public void updateClientPlayers(){
+		CharacterController[] players = FindObjectsOfType<CharacterController>();
+		for (int i = 0; i < players.Length; i++) {
+			if(	players[i].transform.parent != map.transform){
+				players[i].transform.parent = map.transform;
+			}
+		}
+		time_panel.text = "" + ServerVars.game_timer;
+	}
+	
+	
+	public void resizePlayers(){
+		CharacterController[] players = FindObjectsOfType<CharacterController>();
+		for (int i = 0; i < players.Length; i++) {
+			players[i].GetComponent<RectTransform>().localScale = player_prefab.GetComponent<RectTransform>().localScale * server_vars.current_size;
+		}
+	}
+
 
 	public void LaunchServer() {
 		//Network.incomingPassword = "HolyMoly";
@@ -155,28 +189,8 @@ public class GameController : MonoBehaviour {
 
 	}
 
-	public void updateClientPlayers(){
-		CharacterController[] players = FindObjectsOfType<CharacterController>();
-		for (int i = 0; i < players.Length; i++) {
-			if(	players[i].transform.parent != map.transform){
-				players[i].transform.parent = map.transform;
-			}
-		}
-		time_panel.text = "" + ServerVars.game_timer;
-	}
-
-
-	public void resizePlayers(){
-		CharacterController[] players = FindObjectsOfType<CharacterController>();
-		for (int i = 0; i < players.Length; i++) {
-			players[i].GetComponent<RectTransform>().localScale = player_prefab.GetComponent<RectTransform>().localScale * server_vars.current_size;
-		}
-	}
-
 	public void ConnectToServer(){
 		Network.Connect("127.0.0.1", 25000);
-
-
 	}
 
 	void spawnPlayer(){
@@ -184,8 +198,6 @@ public class GameController : MonoBehaviour {
 		CharacterController[] players = FindObjectsOfType<CharacterController>();
 		playerID = players.Length - 1;
 	}
-
-
 
 	void OnConnectedToServer() {
 		Debug.Log("Connected to server");

@@ -30,8 +30,6 @@ public class CharacterController : MonoBehaviour {
 				if (Input.GetKey (KeyCode.D)) {
 					rigidbody2D.velocity = new Vector2(1, 0) * speed;
 				}
-
-
 			}
 		
 			networkView.RPC("updateID", RPCMode.All, FindObjectOfType<GameController>().playerID);
@@ -43,6 +41,7 @@ public class CharacterController : MonoBehaviour {
 		else{
 		}
 
+		// take server values and disperse them to the characters
 		if (Network.isServer) {
 			networkView.RPC("updateLiving", RPCMode.All, living);
 		}

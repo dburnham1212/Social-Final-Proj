@@ -41,7 +41,7 @@ public class TargetPanel : MonoBehaviour {
 		if (panel_position == g_conn.playerID) {
 			transform.parent.GetComponent<Image>().color = Color.green;
 		}
-		else if (g_conn.curr_kill_target == panel_position) {
+		else if (g_conn.curr_kill_target == panel_position && g_conn.out_of_game == false) {
 			transform.parent.GetComponent<Image>().color = Color.red;
 		}
 		else{
@@ -53,7 +53,7 @@ public class TargetPanel : MonoBehaviour {
 		ServerVars s = FindObjectOfType<ServerVars> ();
 		GameController g = FindObjectOfType < GameController >();
 		CharacterController[] p = FindObjectsOfType<CharacterController> ();
-		if(p.Length > panel_position){
+		if(p.Length > panel_position && g.out_of_game == false){
 			if (g.select_target == true) {
 				g.curr_kill_target = panel_position;
 				g.display_target_selector = false;
@@ -61,7 +61,6 @@ public class TargetPanel : MonoBehaviour {
 			}
 			else{
 				g.curr_kill_target = panel_position;
-
 			}
 		}
 
