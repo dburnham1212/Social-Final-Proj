@@ -8,6 +8,15 @@ public class CharacterController : MonoBehaviour {
 	public int currentID;
 	public bool living = true;
 	public int guess_target;
+	 
+
+
+	public int board_x = 0;
+	public int board_y = 0;
+
+	public int strength;
+	public int intelligence;
+	
 	// Use this for initialization
 	void Start () {
 	
@@ -37,8 +46,34 @@ public class CharacterController : MonoBehaviour {
 			guess_target = FindObjectOfType<GameController>().curr_kill_target;
 			// update values over network
 			networkView.RPC("updateKillTarget", RPCMode.All, guess_target);
-		}
-		else{
+			GameController g_cont = FindObjectOfType<GameController>();
+			for(int i = 0; i < g_cont.map_info.Length; i++){
+				if(g_cont.map_info[i].door_x == board_x && g_cont.map_info[i].door_y == board_y){
+					g_cont.current_map_info = g_cont.map_info[i];
+				}
+			}
+			CharacterController[] players = FindObjectsOfType<CharacterController>();
+			for(int i = 0; i < players.Length; i++){
+				if(players[i].board_x != board_x || players[i].board_y != board_y){
+					players[i].GetComponent<CanvasGroup>().alpha = 0;
+					players[i].GetComponent<Collider2D>().enabled = false;
+				}
+				else{
+					if(players[i].living){
+						players[i].GetComponent<CanvasGroup>().alpha = 1;
+						players[i].GetComponent<Collider2D>().enabled = true;
+					}
+				}
+			}
+
+			strength = g_cont.strength;
+			intelligence = g_cont.intelligence;
+
+			networkView.RPC("updateBoardX", RPCMode.All, board_x);
+			networkView.RPC("updateBoardY", RPCMode.All, board_y);
+
+			networkView.RPC("updateIntel", RPCMode.All, intelligence);
+			networkView.RPC("updateStre", RPCMode.All, strength);
 		}
 
 		// take server values and disperse them to the characters
@@ -46,17 +81,35 @@ public class CharacterController : MonoBehaviour {
 			networkView.RPC("updateLiving", RPCMode.All, living);
 		}
 
+
+		
 		if(living == false){
 			if(networkView.isMine){
 				FindObjectOfType<GameController>().out_of_game = true;
 			}
-			GetComponent<CanvasGroup>().alpha = 0;
-		}
-		else{
-			GetComponent<CanvasGroup>().alpha = 1;
 		}
 	}
+
+	[RPC]
+	void updateBoardX(int new_x){
+		board_x = new_x;
+	}
+
+	[RPC]
+	void updateBoardY(int new_y){
+		board_y = new_y;
+	}
+
+	[RPC]
+	void updateIntel(int new_intel){
+		intelligence = new_intel;
+	}
 	
+	[RPC]
+	void updateStre(int new_str){
+		strength = new_str;
+	}
+
 	[RPC]
 	void updateID(int new_id){
 		currentID = new_id;

@@ -12,7 +12,7 @@ public class ServerVars : MonoBehaviour {
 	public bool game_started = false;
 
 	// games timed values stored on server for rounds
-	public static float round_time = 10;
+	public static float round_time = 30;
 	public static float game_timer;
 
 	// games current killer
@@ -29,7 +29,18 @@ public class ServerVars : MonoBehaviour {
 	private bool update_chat = false;
 
 	private string username = "";
-	
+
+	public Sprite coin_sprite;
+	public Sprite xp_sprite;
+
+	public InGamePickup in_game_pick;
+
+	public Clue[] clue_options;
+	public int curr_clue;
+
+	public List<Clue> found_clues;
+	public CluePanel[] display_panels;
+
 	// Simple UI Functions to be used on buttons
 	public void startGame(){
 		game_started = true;
@@ -43,6 +54,14 @@ public class ServerVars : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {	
+		for (int i = 0; i < found_clues.Count; i++) {
+			if(i < display_panels.Length){
+				display_panels[i].GetComponent<Image>().sprite = found_clues[i].clue_sprite;
+				display_panels[i].strength = found_clues[i].strength;
+				display_panels[i].intelligence = found_clues[i].intelligence;
+			}
+		}
+
 		if(Network.isServer){
 			float new_size = FindObjectOfType<GameController> ().GetComponent<Canvas> ().scaleFactor;
 			networkView.RPC("updateSize", RPCMode.All, new_size);
@@ -60,6 +79,49 @@ public class ServerVars : MonoBehaviour {
 				else if(round_complete == true){
 					CharacterController[] players = FindObjectsOfType<CharacterController>();
 					bool k_found = true;
+					GameController g_conn = FindObjectOfType<GameController>();
+					int clue_x = 0;
+					int clue_y = 0;
+
+					clue_x = Random.Range(0, 2);
+					clue_y = Random.Range(0, 1);
+
+					CharacterController killer_char = new CharacterController();
+					for(int i = 0; i < players.Length; i++){
+						if(players[i].currentID == killer){
+							killer_char = players[i];
+						}
+					}
+
+					bool clue_set = false;
+					while(clue_set == false){
+						int clue_val = Random.Range (0, clue_options.Length);
+						if(killer_char.strength >= clue_options[clue_val].strength && killer_char.intelligence >= clue_options[clue_val].intelligence && !clue_set){
+							clue_set = true;
+							curr_clue = clue_val;
+						}
+					}
+
+					networkView.RPC("updateCurrClue", RPCMode.All, curr_clue);
+
+					for(int i = 0; i < g_conn.map_info.Length; i++){
+						if(g_conn.map_info[i].door_x == clue_x && g_conn.map_info[i].door_y == clue_y)
+						{
+							g_conn.map_info[i].pick_up_type = MapPanelInfo.PickupType.CLUE;
+						}
+						else{
+							int other_choice = Random.Range (0,5);
+							if(other_choice == 0){
+								g_conn.map_info[i].pick_up_type = MapPanelInfo.PickupType.COIN;
+							}
+							else{
+								g_conn.map_info[i].pick_up_type = MapPanelInfo.PickupType.XP;
+							}
+
+						}
+						g_conn.map_info[i].round_item_taken = false;
+						g_conn.map_info[i].updateInClients();
+					}
 
 					// check if the other players have found the killer
 					for(int i = 0; i<players.Length; i++){
@@ -77,7 +139,6 @@ public class ServerVars : MonoBehaviour {
 								}
 							}
 						}
-						round_complete = false;
 					}
 					else{
 						game_complete = true;
@@ -93,6 +154,7 @@ public class ServerVars : MonoBehaviour {
 						game_complete = true;
 						killer_won = true;
 					}
+					round_complete = false;
 				}
 				// move to the next round
 				else{
@@ -142,6 +204,11 @@ public class ServerVars : MonoBehaviour {
 			chat_box_text.text = view_string;
 		}
 		username = "Player" + FindObjectOfType<GameController> ().playerID;
+	}
+
+	[RPC]
+	public void updateCurrClue(int new_clue){
+		curr_clue = new_clue;
 	}
 
 	[RPC]

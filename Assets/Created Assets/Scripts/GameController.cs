@@ -31,22 +31,47 @@ public class GameController : MonoBehaviour {
 	public bool select_target = true;
 	public Text player_c_panel;
 
+	public CanvasGroup clue_panel;
+	public bool show_clue_panel = false;
 
 
 	public int curr_kill_target = -1;
 	public bool out_of_game = false;
 
+	public MapPanelInfo[] map_info;
+	public MapPanelInfo current_map_info;
+	
+	public int intelligence = 10;
+	public int strength = 0;
+	public Text inn_text;
+	public Text str_text;
+
+	public Slider inn_str_slider;
+
+	public void showCluePanel(){
+		if(server_vars.game_started){
+			show_clue_panel = true;
+		}
+	}
+
+	public void hideCluePanel(){
+		show_clue_panel = false;
+	}
 
 	void Awake() {
 		MasterServer.RequestHostList("gamea");
 	}
 	// Use this for initialization
 	void Start () {
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		intelligence = (int)inn_str_slider.value;
+		strength = (int)(inn_str_slider.maxValue - inn_str_slider.value);
+		inn_text.text = "" + intelligence;
+		str_text.text = "" + strength;
 		if(!connected){
 			host_data = MasterServer.PollHostList();
 
@@ -68,6 +93,9 @@ public class GameController : MonoBehaviour {
 
 			target_selector.alpha = 0;
 			target_selector.blocksRaycasts = false;
+
+			clue_panel.alpha = 0;
+			clue_panel.blocksRaycasts = false;
 		}
 		else{
 			host_selection.alpha = 0;
@@ -75,6 +103,14 @@ public class GameController : MonoBehaviour {
 
 			if(server_vars.game_started){
 				// control the games UI
+				if(show_clue_panel == true){
+					clue_panel.alpha = 1;
+					clue_panel.blocksRaycasts = true;
+				}
+				else{
+					clue_panel.alpha = 0;
+					clue_panel.blocksRaycasts = false;
+				}
 				if(display_map){
 					player_map.alpha = 1;
 					player_map.blocksRaycasts = true;
@@ -102,7 +138,7 @@ public class GameController : MonoBehaviour {
 			}
 		}
 
-
+		map.GetComponent<Image> ().sprite = current_map_info.GetComponent<Image> ().sprite;
 		if (Network.isServer) {
 			if(connected == false){
 				spawnPlayer();

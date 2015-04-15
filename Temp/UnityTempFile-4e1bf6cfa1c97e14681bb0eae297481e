@@ -41,7 +41,12 @@
 -define:UNITY_EDITOR
 -define:UNITY_EDITOR_WIN
 "Assets/Created Assets/Scripts/CharacterController.cs"
+"Assets/Created Assets/Scripts/Clue.cs"
+"Assets/Created Assets/Scripts/CluePanel.cs"
+"Assets/Created Assets/Scripts/Door.cs"
 "Assets/Created Assets/Scripts/GameController.cs"
+"Assets/Created Assets/Scripts/InGamePickup.cs"
+"Assets/Created Assets/Scripts/MapPanelInfo.cs"
 "Assets/Created Assets/Scripts/MenuScreen.cs"
 "Assets/Created Assets/Scripts/MenuToggle.cs"
 "Assets/Created Assets/Scripts/ServerVars.cs"

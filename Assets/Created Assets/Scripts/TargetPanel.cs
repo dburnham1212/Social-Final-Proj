@@ -7,6 +7,8 @@ public class TargetPanel : MonoBehaviour {
 	public int panel_position = 0;
 	public ServerVars server_vars;
 	public CanvasGroup dead_overlay;
+	public Text str_value;
+	public Text int_value;
 
 	// Use this for initialization
 	void Start () {
@@ -23,8 +25,9 @@ public class TargetPanel : MonoBehaviour {
 				if(players[i].living == false){
 					player_dead = true;
 				}
+				str_value.text = "" +  players[i].strength;
+				int_value.text = "" + players[i].intelligence;
 			}
-
 			
 		}
 		if(player_dead){

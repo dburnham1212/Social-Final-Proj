@@ -47,7 +47,12 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Created Assets\Scripts\CharacterController.cs" />
+     <Compile Include="Assets\Created Assets\Scripts\Clue.cs" />
+     <Compile Include="Assets\Created Assets\Scripts\CluePanel.cs" />
+     <Compile Include="Assets\Created Assets\Scripts\Door.cs" />
      <Compile Include="Assets\Created Assets\Scripts\GameController.cs" />
+     <Compile Include="Assets\Created Assets\Scripts\InGamePickup.cs" />
+     <Compile Include="Assets\Created Assets\Scripts\MapPanelInfo.cs" />
      <Compile Include="Assets\Created Assets\Scripts\MenuScreen.cs" />
      <Compile Include="Assets\Created Assets\Scripts\MenuToggle.cs" />
      <Compile Include="Assets\Created Assets\Scripts\ServerVars.cs" />
